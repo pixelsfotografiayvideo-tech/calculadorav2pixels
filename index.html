@@ -337,7 +337,7 @@ body {
   <div class="header">
     <div class="eyebrow">Pixels · Fotografía & Video</div>
     <h1 class="title">Calculadora de <em>pagos</em></h1>
-    <p class="subtitle">Ingresá el monto, elegí el mes a abonar tu evento y calculá las cuotas al instante.</p>
+    <p class="subtitle">Ingresá el monto, elegí el mes del evento y calculá las cuotas al instante.</p>
   </div>
 
   <!-- ══ PASO 1: MONTO BASE ══ -->
@@ -360,7 +360,7 @@ body {
     <div class="step-text inactive" id="step2-text">Mes del evento</div>
   </div>
   <div class="card locked" id="card-mes">
-    <div class="input-label" style="margin-bottom:16px;">¿En qué mes cancelas el evento?</div>
+    <div class="input-label" style="margin-bottom:16px;">¿En qué mes es el evento?</div>
     <div class="month-grid" id="month-grid"></div>
 
     <!-- Resultado ajuste IPC -->
@@ -398,7 +398,10 @@ body {
 
     <div class="adelanto-wrap" id="adelanto-wrap">
       <div class="input-label" style="margin-bottom:8px;">Monto adelantado ($)</div>
-      <input class="adelanto-input" type="text" id="adelanto" placeholder="Ej: 200.000" oninput="formatInput(this); calcular()" />
+      <input class="adelanto-input" type="text" id="adelanto" placeholder="50.000" oninput="onAdelantoInput(this)" />
+      <div id="adelanto-min-note" style="font-size:10px;color:rgba(201,169,110,.55);margin-top:6px;font-style:italic;display:none;">
+        &#9888; El adelanto mínimo es $ 50.000
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -613,6 +616,23 @@ function setModo(m, btn) {
   document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('adelanto-wrap').classList.toggle('visible', m === 'adelanto');
+  if (m === 'adelanto') {
+    const inp = document.getElementById('adelanto');
+    if (!inp.value) inp.value = '50.000';
+    document.getElementById('adelanto-min-note').style.display = 'none';
+  }
+  calcular();
+}
+
+function onAdelantoInput(input) {
+  formatInput(input);
+  const val = parseMonto(input.value);
+  const note = document.getElementById('adelanto-min-note');
+  if (val > 0 && val < 50000) {
+    note.style.display = 'block';
+  } else {
+    note.style.display = 'none';
+  }
   calcular();
 }
 
@@ -643,7 +663,8 @@ function calcular() {
     label_inicial = 'Seña inicial (25%)';
     desc_inicial = 'Se cobra al momento de confirmar la reserva';
   } else {
-    pago_inicial = parseMonto(document.getElementById('adelanto').value);
+    const rawAdelanto = parseMonto(document.getElementById('adelanto').value);
+    pago_inicial = rawAdelanto < 50000 ? 50000 : rawAdelanto;
     label_inicial = 'Adelanto ya abonado';
     desc_inicial = 'Monto recibido previamente descontado del saldo';
   }
@@ -740,3 +761,4 @@ buildMonthGrid();
 </script>
 </body>
 </html>
+
